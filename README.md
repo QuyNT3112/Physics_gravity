@@ -15,6 +15,7 @@
 - [Cài Đặt & Chạy](#-cài-đặt--chạy)
 - [API Backend](#-api-backend)
 - [Chi Tiết Từng Module](#-chi-tiết-từng-module)
+- [Data Engineering & Database](#-data-engineering--database)
 - [Phương Pháp Số](#-phương-pháp-số)
 - [Tài Liệu Tham Khảo](#-tài-liệu-tham-khảo)
 
@@ -183,6 +184,10 @@ z = 2√(rs · (r − rs)),  r > rs
 learn_physic/
 │
 ├── app.py          # Python Flask backend – toàn bộ tính toán vật lý
+├── database.py     # Database engine & session management (SQLite/PostgreSQL)
+├── models.py       # SQLAlchemy ORM Models (SimulationRun, AnalyticsSummary, vv.)
+├── etl_pipeline.py # ETL Jobs: Aggregate data, Heatmap, JSON Export
+├── schema_migration.py # Migration tool chuyển đổi SQLite -> PostgreSQL
 ├── index.html      # Giao diện HTML chính
 ├── style.css       # Dark space theme, Glassmorphism CSS
 ├── main.js         # Canvas rendering, API calls, animations
@@ -208,7 +213,17 @@ learn_physic/
 ### Bước 1 – Cài đặt thư viện Python
 
 ```bash
-python -m pip install flask flask-cors numpy
+python -m pip install -r requirements.txt
+```
+
+Nếu muốn chạy bằng PostgreSQL, hãy bỏ comment thư viện `psycopg2-binary` trong file `requirements.txt`.
+
+### Bước 2 – Khởi tạo cơ sở dữ liệu
+
+Mặc định, ứng dụng dùng SQLite để dễ dàng chạy cục bộ.
+
+```bash
+python schema_migration.py init
 ```
 
 ### Bước 2 – Khởi động backend
@@ -541,6 +556,27 @@ d²r/dλ² = −(1/2) · dV_eff/dr · L²
 │  Thư viện: NumPy, Flask, Flask-CORS                 │
 └─────────────────────────────────────────────────────┘
 ```
+
+---
+
+## 💾 Data Engineering & Database
+
+Dự án này tích hợp một **Data Engineering stack** hoàn chỉnh để lưu trữ lịch sử mô phỏng, phân tích, và phục vụ phân tích máy học.
+
+### Kiến trúc Database (SQLite → PostgreSQL)
+- **Local Dev**: Dùng SQLite không cần cài đặt (file `physics_sim.db`).
+- **Production**: Chỉ cần thay đổi `DATABASE_URL` trong file `.env` thành PostgreSQL (`postgresql://user:pass@host/db`) và cài đặt `psycopg2`.
+- Sử dụng **SQLAlchemy ORM** để quản lý model.
+
+### ETL Pipeline (`etl_pipeline.py`)
+Có một job ETL để tự động phân tích và trích xuất dữ liệu:
+1. `aggregate_daily_stats()`: Tính toán thống kê sử dụng (thời gian chạy trung bình, số lần chạy, thông số phổ biến).
+2. `update_parameter_heatmap()`: Cập nhật Heatmap để xem tham số nào hay được sử dụng nhất và tỷ lệ bị bắt (captured rate).
+3. `cleanup_old_results()`: Dọn dẹp các JSON results cũ để tiết kiệm dung lượng.
+4. `export_to_json()`: Export toàn bộ history phục vụ cho huấn luyện Machine Learning.
+
+### Schema Migration (`schema_migration.py`)
+Hỗ trợ kiểm tra tình trạng DB, cập nhật thay đổi schema và sao chép trực tiếp dữ liệu từ SQLite sang PostgreSQL khi cần thiết (`python schema_migration.py to-postgres --pg-url ...`).
 
 ---
 

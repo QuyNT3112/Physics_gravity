@@ -1,0 +1,7 @@
+flask>=3.0
+flask-cors>=4.0
+numpy>=1.24
+sqlalchemy>=2.0
+alembic>=1.13
+python-dotenv>=1.0
+# psycopg2-binary>=2.9  # Bỏ comment khi chuyển sang PostgreSQL
