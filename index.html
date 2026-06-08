@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thuyết Tương Đối Rộng – Mô Phỏng Einstein</title>
+  <meta name="description" content="Mô phỏng tương tác Thuyết Tương Đối Rộng: trắc địa Schwarzschild, lực kéo ánh sáng, giãn thời gian và sóng hấp dẫn." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ══ HERO ═══════════════════════════════════════════════════════════════════ -->
+<header class="hero" id="hero">
+  <canvas id="starfield-canvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      <span>Einstein Field Equations  •  Schwarzschild Metric</span>
+    </div>
+    <h1 class="hero-title">
+      <span class="title-line">Thuyết Tương Đối</span>
+      <span class="title-line accent">Rộng</span>
+    </h1>
+    <p class="hero-subtitle">
+      Khám phá cách khối lượng uốn cong không-thời gian, bẻ cong ánh sáng,<br/>
+      và làm chậm đồng hồ – mô phỏng bởi phương trình Einstein.
+    </p>
+    <div class="hero-formula">
+      G<sub>μν</sub> + Λg<sub>μν</sub> = <span class="formula-frac"><span>8πG</span><span>c⁴</span></span> T<sub>μν</sub>
+    </div>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="scrollToSection('simulations')">
+        🔬 Khám Phá Mô Phỏng
+      </button>
+      <button class="btn btn-ghost" onclick="scrollToSection('theory')">
+        📖 Lý Thuyết
+      </button>
+    </div>
+  </div>
+  <div class="hero-scroll-hint">
+    <span>Cuộn xuống</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</header>
+
+<!-- ══ THEORY CARDS ═══════════════════════════════════════════════════════════ -->
+<section class="section" id="theory">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Nền Tảng Vật Lý</div>
+      <h2 class="section-title">Các Khái Niệm Cốt Lõi</h2>
+    </div>
+    <div class="concepts-grid">
+      <div class="concept-card" data-concept="curvature">
+        <div class="concept-icon">🌀</div>
+        <h3>Độ Cong Không-Thời Gian</h3>
+        <p>Khối lượng làm cong cấu trúc 4 chiều của vũ trụ. Vật thể di chuyển theo đường ngắn nhất trong không gian cong này — gọi là <strong>trắc địa (geodesic)</strong>.</p>
+        <div class="concept-formula">ds² = −(1−r<sub>s</sub>/r)c²dt² + dr²/(1−r<sub>s</sub>/r) + r²dΩ²</div>
+        <div class="concept-tag">Metric Schwarzschild</div>
+      </div>
+      <div class="concept-card" data-concept="lensing">
+        <div class="concept-icon">🔭</div>
+        <h3>Thấu Kính Hấp Dẫn</h3>
+        <p>Ánh sáng bị bẻ cong khi đi qua vùng không-thời gian cong. Einstein dự đoán góc lệch <strong>δ ≈ 4GM/bc²</strong> — gấp đôi Newton.</p>
+        <div class="concept-formula">δ = <span class="frac"><span>4GM</span><span>bc²</span></span> = <span class="frac"><span>2r<sub>s</sub></span><span>b</span></span></div>
+        <div class="concept-tag">Nhật Thực 1919</div>
+      </div>
+      <div class="concept-card" data-concept="timedilation">
+        <div class="concept-icon">⏱️</div>
+        <h3>Giãn Nở Thời Gian</h3>
+        <p>Thời gian chạy chậm hơn gần vật thể khối lượng lớn. Tại chân trời sự kiện, thời gian ngừng hẳn.</p>
+        <div class="concept-formula">dτ/dt = √(1 − r<sub>s</sub>/r)</div>
+        <div class="concept-tag">GPS cần hiệu chỉnh +45 μs/ngày</div>
+      </div>
+      <div class="concept-card" data-concept="blackhole">
+        <div class="concept-icon">🕳️</div>
+        <h3>Hố Đen Schwarzschild</h3>
+        <p>Khi khối lượng bị nén dưới bán kính Schwarzschild r<sub>s</sub>, không gì thoát khỏi nó — kể cả ánh sáng.</p>
+        <div class="concept-formula">r<sub>s</sub> = <span class="frac"><span>2GM</span><span>c²</span></span></div>
+        <div class="concept-tag">Chân trời sự kiện</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SIMULATION TABS ════════════════════════════════════════════════════════ -->
+<section class="section sim-section" id="simulations">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Mô Phỏng Tương Tác</div>
+      <h2 class="section-title">Thí Nghiệm Tư Duy Einstein</h2>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tab-bar" role="tablist">
+      <button class="tab active" id="tab-geodesic"   role="tab" onclick="switchTab('geodesic')">
+        🌀 Trắc Địa
+      </button>
+      <button class="tab" id="tab-lightray"   role="tab" onclick="switchTab('lightray')">
+        💡 Ánh Sáng
+      </button>
+      <button class="tab" id="tab-timedilation" role="tab" onclick="switchTab('timedilation')">
+        ⏰ Giãn Thời Gian
+      </button>
+      <button class="tab" id="tab-curvature"  role="tab" onclick="switchTab('curvature')">
+        🌐 Cong Không Gian
+      </button>
+      <button class="tab" id="tab-waves"      role="tab" onclick="switchTab('waves')">
+        〰️ Sóng Hấp Dẫn
+      </button>
+    </div>
+
+    <!-- ── TAB: Geodesic ───────────────────────────────────────────────────── -->
+    <div class="tab-panel active" id="panel-geodesic">
+      <div class="panel-layout">
+        <div class="panel-controls">
+          <h3 class="control-title">⚙️ Tham Số Quỹ Đạo</h3>
+          <div class="control-group">
+            <label for="geo-r0">Bán kính ban đầu <em>r₀</em> (× r<sub>s</sub>)</label>
+            <input type="range" id="geo-r0" min="2.1" max="20" step="0.1" value="6" oninput="updateLabel(this,'geo-r0-val')" />
+            <span class="range-val" id="geo-r0-val">6.0</span>
+          </div>
+          <div class="control-group">
+            <label for="geo-dphi">Vận tốc góc <em>dφ/dτ</em></label>
+            <input type="range" id="geo-dphi" min="0.05" max="0.35" step="0.005" value="0.12" oninput="updateLabel(this,'geo-dphi-val')" />
+            <span class="range-val" id="geo-dphi-val">0.120</span>
+          </div>
+          <div class="control-group">
+            <label for="geo-dr">Vận tốc hướng tâm <em>dr/dτ</em></label>
+            <input type="range" id="geo-dr" min="-0.3" max="0.3" step="0.01" value="0.0" oninput="updateLabel(this,'geo-dr-val')" />
+            <span class="range-val" id="geo-dr-val">0.00</span>
+          </div>
+          <div class="control-group">
+            <label for="geo-steps">Số bước tích phân</label>
+            <input type="range" id="geo-steps" min="200" max="2000" step="100" value="900" oninput="updateLabel(this,'geo-steps-val')" />
+            <span class="range-val" id="geo-steps-val">900</span>
+          </div>
+          <button class="btn btn-primary full-width" id="run-geodesic" onclick="runGeodesic()">
+            ▶ Chạy Mô Phỏng
+          </button>
+          <button class="btn btn-ghost full-width" onclick="runMultiGeodesics()">
+            🌈 Họ Quỹ Đạo
+          </button>
+
+          <div class="info-box" id="geo-info">
+            <p>Chọn tham số và nhấn <strong>Chạy Mô Phỏng</strong></p>
+            <p class="hint">r₀ = 3rs: Quỹ đạo tròn không ổn định (ISCO)<br/>
+               r₀ &lt; 3rs: Vật bị hút vào hố đen</p>
+          </div>
+        </div>
+        <div class="panel-canvas-wrap">
+          <canvas id="canvas-geodesic" width="620" height="620"></canvas>
+          <div class="canvas-label">Không gian Schwarzschild (mặt phẳng xích đạo)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Light Ray ─────────────────────────────────────────────────── -->
+    <div class="tab-panel" id="panel-lightray">
+      <div class="panel-layout">
+        <div class="panel-controls">
+          <h3 class="control-title">⚙️ Tham Số Tia Sáng</h3>
+          <div class="control-group">
+            <label for="lr-b">Thông số va chạm <em>b</em> (× r<sub>s</sub>)</label>
+            <input type="range" id="lr-b" min="1.6" max="20" step="0.1" value="5" oninput="updateLabel(this,'lr-b-val');previewLightRay()" />
+            <span class="range-val" id="lr-b-val">5.0</span>
+          </div>
+          <div class="control-group">
+            <label>Nhiều tia sáng cùng lúc</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="lr-multi" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <button class="btn btn-primary full-width" onclick="runLightRay()">
+            💡 Bắn Tia Sáng
+          </button>
+          <div class="info-box" id="lr-info">
+            <p><strong>b = 1.5 r<sub>s</sub></strong>: Quỹ đạo photon (photon sphere)</p>
+            <p>Tia sáng có b &lt; 1.5r<sub>s</sub> bị hút vào hố đen.</p>
+          </div>
+          <div class="deflection-display" id="deflection-display" style="display:none">
+            <div class="def-label">Góc lệch ánh sáng</div>
+            <div class="def-value" id="def-angle">—</div>
+          </div>
+        </div>
+        <div class="panel-canvas-wrap">
+          <canvas id="canvas-lightray" width="620" height="620"></canvas>
+          <div class="canvas-label">Thấu kính hấp dẫn – Null Geodesic</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Time Dilation ─────────────────────────────────────────────── -->
+    <div class="tab-panel" id="panel-timedilation">
+      <div class="panel-layout">
+        <div class="panel-controls">
+          <h3 class="control-title">⚙️ Giãn Nở Thời Gian</h3>
+          <div class="control-group">
+            <label for="td-rmax">Bán kính tối đa (× r<sub>s</sub>)</label>
+            <input type="range" id="td-rmax" min="3" max="50" step="1" value="20" oninput="updateLabel(this,'td-rmax-val');runTimeDilation()" />
+            <span class="range-val" id="td-rmax-val">20</span>
+          </div>
+          <div class="control-group">
+            <label for="td-probe">Vị trí thăm dò (× r<sub>s</sub>)</label>
+            <input type="range" id="td-probe" min="1.05" max="20" step="0.05" value="3" oninput="updateLabel(this,'td-probe-val');updateProbe()" />
+            <span class="range-val" id="td-probe-val">3.0</span>
+          </div>
+          <div class="probe-display">
+            <div class="probe-row">
+              <span>Tốc độ đồng hồ</span>
+              <span id="probe-rate" class="probe-value">—</span>
+            </div>
+            <div class="probe-row">
+              <span>Chậm hơn so với vô cực</span>
+              <span id="probe-slow" class="probe-value slow">—</span>
+            </div>
+            <div class="probe-row">
+              <span>1 năm ở đây ≡ ngoài xa</span>
+              <span id="probe-year" class="probe-value accent">—</span>
+            </div>
+          </div>
+          <button class="btn btn-primary full-width" onclick="runTimeDilation()">
+            📊 Vẽ Đồ Thị
+          </button>
+        </div>
+        <div class="panel-canvas-wrap">
+          <canvas id="canvas-timedilation" width="620" height="420"></canvas>
+          <canvas id="canvas-clocks" width="620" height="180"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Curvature Grid ───────────────────────────────────────────── -->
+    <div class="tab-panel" id="panel-curvature">
+      <div class="panel-layout">
+        <div class="panel-controls">
+          <h3 class="control-title">⚙️ Lưới Không-Thời Gian</h3>
+          <div class="control-group">
+            <label for="curv-rs">Bán kính Schwarzschild</label>
+            <input type="range" id="curv-rs" min="0.5" max="4" step="0.1" value="1.0" oninput="updateLabel(this,'curv-rs-val');runCurvature()" />
+            <span class="range-val" id="curv-rs-val">1.0</span>
+          </div>
+          <div class="control-group">
+            <label for="curv-size">Độ phân giải lưới</label>
+            <input type="range" id="curv-size" min="10" max="30" step="2" value="20" oninput="updateLabel(this,'curv-size-val');runCurvature()" />
+            <span class="range-val" id="curv-size-val">20</span>
+          </div>
+          <div class="control-group">
+            <label for="curv-rmax">Tầm nhìn (× r<sub>s</sub>)</label>
+            <input type="range" id="curv-rmax" min="5" max="20" step="1" value="10" oninput="updateLabel(this,'curv-rmax-val');runCurvature()" />
+            <span class="range-val" id="curv-rmax-val">10</span>
+          </div>
+          <div class="info-box">
+            <p>Biểu đồ nhúng <strong>Flamm's Paraboloid</strong> – hình dạng hình học của không gian quanh hố đen.</p>
+            <p class="hint">Màu thể hiện độ cong (đỏ = cong nhiều, tím = phẳng)</p>
+          </div>
+        </div>
+        <div class="panel-canvas-wrap">
+          <canvas id="canvas-curvature" width="620" height="620"></canvas>
+          <div class="canvas-label">Paraboloid Flamm – Không Gian Cong</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Gravitational Waves ─────────────────────────────────────── -->
+    <div class="tab-panel" id="panel-waves">
+      <div class="panel-layout">
+        <div class="panel-controls">
+          <h3 class="control-title">⚙️ Sóng Hấp Dẫn</h3>
+          <div class="control-group">
+            <label for="gw-m1">Khối lượng 1 (M<sub>☉</sub>)</label>
+            <input type="range" id="gw-m1" min="5" max="80" step="1" value="30" oninput="updateLabel(this,'gw-m1-val')" />
+            <span class="range-val" id="gw-m1-val">30</span>
+          </div>
+          <div class="control-group">
+            <label for="gw-m2">Khối lượng 2 (M<sub>☉</sub>)</label>
+            <input type="range" id="gw-m2" min="5" max="80" step="1" value="30" oninput="updateLabel(this,'gw-m2-val')" />
+            <span class="range-val" id="gw-m2-val">30</span>
+          </div>
+          <div class="gw-stats" id="gw-stats" style="display:none">
+            <div class="stat-row">
+              <span>Khối lượng chirp</span>
+              <span id="gw-chirp" class="stat-val">—</span>
+            </div>
+            <div class="stat-row">
+              <span>Tần số ban đầu</span>
+              <span id="gw-f0" class="stat-val">~50 Hz</span>
+            </div>
+            <div class="stat-row">
+              <span>LIGO phát hiện GW150914</span>
+              <span class="stat-val accent">36+29 M☉</span>
+            </div>
+          </div>
+          <button class="btn btn-primary full-width" onclick="runGravWaves()">
+            〰️ Mô Phỏng Sóng
+          </button>
+          <button class="btn btn-ghost full-width" onclick="animateWaves()">
+            ▶ Phát Animation
+          </button>
+        </div>
+        <div class="panel-canvas-wrap">
+          <canvas id="canvas-waves" width="620" height="300"></canvas>
+          <canvas id="canvas-wavemap" width="620" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ BLACK HOLE INFO ════════════════════════════════════════════════════════ -->
+<section class="section bh-section" id="blackhole">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Hố Đen</div>
+      <h2 class="section-title">Tính Toán Bán Kính Schwarzschild</h2>
+    </div>
+    <div class="bh-layout">
+      <div class="bh-visual">
+        <canvas id="canvas-blackhole" width="340" height="340"></canvas>
+      </div>
+      <div class="bh-controls">
+        <div class="mass-input-wrap">
+          <label for="bh-mass">Khối lượng (lần khối lượng Mặt Trời M<sub>☉</sub>)</label>
+          <div class="mass-row">
+            <input type="number" id="bh-mass" value="10" min="0.01" max="1e9" step="0.1" />
+            <span class="mass-unit">M<sub>☉</sub></span>
+          </div>
+        </div>
+        <div class="preset-masses">
+          <span class="preset-label">Ví dụ nhanh:</span>
+          <button class="preset-btn" onclick="setMass(1,'Mặt Trời')">☀️ M☉</button>
+          <button class="preset-btn" onclick="setMass(10,'Sao Neutron→BH')">⭐ 10 M☉</button>
+          <button class="preset-btn" onclick="setMass(4.1e6,'Sgr A*')">🌌 Sgr A*</button>
+          <button class="preset-btn" onclick="setMass(6.5e9,'M87*')">🔭 M87*</button>
+        </div>
+        <button class="btn btn-primary" onclick="calcBlackHole()">🕳️ Tính Toán</button>
+        <div class="bh-result" id="bh-result" style="display:none">
+          <div class="result-row">
+            <span>Bán kính Schwarzschild</span>
+            <span id="bh-rs" class="result-val primary">—</span>
+          </div>
+          <div class="result-row">
+            <span>Cần nén xuống còn</span>
+            <span id="bh-compress" class="result-val">—</span>
+          </div>
+          <div class="result-row">
+            <span>Nhiệt độ Hawking</span>
+            <span id="bh-hawking" class="result-val accent">—</span>
+          </div>
+          <div class="result-desc" id="bh-desc"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ═════════════════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <span class="footer-logo">G<sub>μν</sub></span>
+        <p>Mô phỏng Thuyết Tương Đối Rộng</p>
+        <p class="footer-tech">Python • Flask • HTML5 Canvas • RK4 Integration</p>
+      </div>
+      <div class="footer-links">
+        <h4>Tài Liệu Tham Khảo</h4>
+        <ul>
+          <li>Schwarzschild, K. (1916) – Exact solution</li>
+          <li>Einstein, A. (1915) – Field equations</li>
+          <li>LIGO Collaboration (2015) – GW150914</li>
+          <li>EHT Collaboration (2019) – M87* image</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>Mọi tính toán số học bởi backend Python • Giải phương trình geodesic bằng phương pháp RK4</p>
+    </div>
+  </div>
+</footer>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loader-ring"></div>
+  <p>Đang tích phân geodesic...</p>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>
